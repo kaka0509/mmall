@@ -83,7 +83,7 @@ public class CategoryServiceImpl implements ICategoryService {
     public ServerResponse selectCategoryAndChildrenById(Integer categoryId) {
         // 利用Set进行复杂对象排重（需要重写HashCode和equals方法）
         Set<Category> categorySet = Sets.newHashSet();
-        //使用findChildCategory处理categorySet
+        //使用findChildCategory处理categorySet，完成递归查找并添加到categorySet中
         findChildCategory(categorySet, categoryId);
 
         List<Integer> categoryIdList = Lists.newArrayList();
@@ -111,9 +111,10 @@ public class CategoryServiceImpl implements ICategoryService {
         List<Category> categoryList = categoryMapper.selectCategoryChildrenByParentId(categoryId);
         //退出条件为到达最后一级节点，categoryList为null
         for (Category categoryItem : categoryList) {
+            //递归查询
             findChildCategory(categorySet, categoryItem.getId());
         }
-        // categorySet 是每次递归的参数
+        // 将categorySet返回上层
         return categorySet;
     }
 }
