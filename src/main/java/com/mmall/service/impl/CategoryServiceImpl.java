@@ -76,11 +76,11 @@ public class CategoryServiceImpl implements ICategoryService {
     }
 
     /**
-     * 返回当前分类结点的所有子节点
+     * 返回当前分类结点的所有子节点id
      * @param categoryId
      * @return
      */
-    public ServerResponse selectCategoryAndChildrenById(Integer categoryId) {
+    public ServerResponse<List<Integer>> selectCategoryAndChildrenById(Integer categoryId) {
         // 利用Set进行复杂对象排重（需要重写HashCode和equals方法）
         Set<Category> categorySet = Sets.newHashSet();
         //使用findChildCategory处理categorySet，完成递归查找并添加到categorySet中
