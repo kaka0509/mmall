@@ -122,21 +122,21 @@ public class CartServiceImpl implements ICartService {
      */
     private CartVo getCartVoLimit(Integer userId) {
         CartVo cartVo = new CartVo();
-        //查询对应用户的所有购物车对象
+        //查询对应userId用户的所有Cart数据表记录
         List<Cart> cartList = cartMapper.selectCartByUserId(userId);
-
+        //声明一个list用来装cart记录对应的产品
         List<CartProductVo> cartProductVoList = Lists.newArrayList();
 
         //初始化购物车总价
         BigDecimal cartTotalPrice = new BigDecimal("0");
 
-        if (CollectionUtils.isNotEmpty(cartList)) {
-            for (Cart cartItem : cartList) {
+        if (CollectionUtils.isNotEmpty(cartList)) {//购物车记录不为空
+            for (Cart cartItem : cartList) {//遍历取得购物车对应产品对象，组装成Vo
                 CartProductVo cartProductVo = new CartProductVo();
                 cartProductVo.setId(cartItem.getId());
                 cartProductVo.setUserId(cartItem.getUserId());
                 cartProductVo.setProductId(cartItem.getProductId());
-
+                //其他字段需要通过productMapper查找填充
                 Product product = productMapper.selectByPrimaryKey(cartItem.getProductId());
                 if (product != null) {
                     cartProductVo.setProductMainImage(product.getMainImage());
