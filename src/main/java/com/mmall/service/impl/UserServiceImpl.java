@@ -105,7 +105,7 @@ public class UserServiceImpl implements IUserService {
     public ServerResponse<String> checkAnswer(String username, String question, String answer) {
         int resultCount = userMapper.checkAnswer(username, question, answer);
         if (resultCount > 0) {
-            //问题及答案是这个用户的，并且是正确的
+            //问题及答案是这个用户的，并且是正确的。生成Token放入Guava缓存
             String forgetToken = UUID.randomUUID().toString();
             TokenCache.setKey(TokenCache.TOKEN_PREFIX + username, forgetToken);
             return ServerResponse.createBySuccess(forgetToken);
