@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,6 +34,99 @@ public class OrderController {
 
     @Autowired
     private IOrderService iOrderService;
+
+    /**
+     * 创建订单
+     *
+     * @param session
+     * @param shippingId
+     * @return
+     */
+    @RequestMapping("create.do")
+    @ResponseBody
+    public ServerResponse create(HttpSession session, Integer shippingId) {
+        User user = (User) session.getAttribute(Const.CURRENT_USER);
+        if (user == null) {
+            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), (ResponseCode.NEED_LOGIN.getDesc()));
+        }
+        return iOrderService.createOrder(user.getId(), shippingId);
+    }
+
+
+    /**
+     * 取消订单
+     *
+     * @param session
+     * @param orderNo
+     * @return
+     */
+    @RequestMapping("cancel.do")
+    @ResponseBody
+    public ServerResponse cancel(HttpSession session, Long orderNo) {
+        User user = (User) session.getAttribute(Const.CURRENT_USER);
+        if (user == null) {
+            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), (ResponseCode.NEED_LOGIN.getDesc()));
+        }
+
+        return iOrderService.cancel(user.getId(), orderNo);
+    }
+
+    /**
+     * 客户在预览时看到购物车中明细
+     * 假设用户买了10种不同商品，但是他买了5件，另外5件依旧留在购物车
+     * 该接口用于获取购物车中已经选中的商品的详情
+     * 目前前端不会调用该接口 是为了实现预下单功能做准备
+     *
+     * @param session
+     * @return
+     */
+    @RequestMapping("get_order_cart_product.do")
+    @ResponseBody
+    public ServerResponse getOrderCartProduct(HttpSession session) {
+        User user = (User) session.getAttribute(Const.CURRENT_USER);
+        if (user == null) {
+            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), (ResponseCode.NEED_LOGIN.getDesc()));
+        }
+
+        return iOrderService.getOrderCartProduct(user.getId());
+    }
+
+    /**
+     * 查看订单详情
+     *
+     * @param session
+     * @param orderNo
+     * @return
+     */
+    @RequestMapping("detail.do")
+    @ResponseBody
+    public ServerResponse detail(HttpSession session, Long orderNo) {
+        User user = (User) session.getAttribute(Const.CURRENT_USER);
+        if (user == null) {
+            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), (ResponseCode.NEED_LOGIN.getDesc()));
+        }
+
+        return iOrderService.getOrderDetail(user.getId(), orderNo);
+    }
+
+    /**
+     * 普通用户分页用户列表
+     * @param session
+     * @return
+     */
+    @RequestMapping("list.do")
+    @ResponseBody
+    public ServerResponse list(HttpSession session,
+                               @RequestParam(value = "pageNum", defaultValue = "1") int pageNum,
+                               @RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
+        User user = (User) session.getAttribute(Const.CURRENT_USER);
+        if (user == null) {
+            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), (ResponseCode.NEED_LOGIN.getDesc()));
+        }
+
+        return iOrderService.getOrderList(user.getId(), pageNum, pageSize);
+    }
+
 
     /**
      * 用户付款接口
@@ -56,6 +150,7 @@ public class OrderController {
 
     /**
      * 该接口由支付宝负责调用
+     *
      * @param request
      * @return
      */
@@ -102,6 +197,7 @@ public class OrderController {
 
     /**
      * 查询订单是否已经支付成功
+     *
      * @param session
      * @param orderNo
      * @return
@@ -115,7 +211,7 @@ public class OrderController {
         }
 
         ServerResponse serverResponse = iOrderService.queryOrderPayStatus(user.getId(), orderNo);
-        if (serverResponse.isSuccess()){
+        if (serverResponse.isSuccess()) {
             return ServerResponse.createBySuccess(true);
         }
         return ServerResponse.createBySuccess(false);
